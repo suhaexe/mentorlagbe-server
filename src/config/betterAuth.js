@@ -18,7 +18,7 @@ const db = client.db();
 const advanced = isProduction
   ? {
       defaultCookieAttributes: {
-        sameSite: process.env.COOKIE_SAMESITE || "lax",
+        sameSite: process.env.COOKIE_SAMESITE || "none",
         secure: true,
       },
       ...(process.env.COOKIE_DOMAIN
