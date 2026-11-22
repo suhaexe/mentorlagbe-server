@@ -22,9 +22,7 @@ const applicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Req #76: prevent duplicate applications (same student, same tuition)
 applicationSchema.index({ tuitionId: 1, studentEmail: 1 }, { unique: true });
-// Query helpers for dashboards
 applicationSchema.index({ studentEmail: 1, status: 1 });
 applicationSchema.index({ tutorEmail: 1, status: 1 });
 

@@ -81,7 +81,7 @@ export const createTuition = async (req, res) => {
     const newTuition = new Tuition({
       ...req.body,
       tutorEmail: email,
-      tutorName: req.body.tutorName || user.name, // Use user's actual name
+      tutorName: req.body.tutorName || user.name,
       approvalStatus: "pending",
       isActive: true
     });

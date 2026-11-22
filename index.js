@@ -25,7 +25,6 @@ app.use(cors({
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// Stripe webhook needs raw body — mount before express.json
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), handleWebhook);
 
 app.use(express.json({ limit: "10mb" })); 
@@ -47,8 +46,11 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || "Server error" });
 });
 
-const PORT = process.env.PORT || 5000;
+export default app;
 
-connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  connectDB().then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  });
+}

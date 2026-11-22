@@ -7,7 +7,6 @@ const router = Router();
 
 router.post("/issue", async (req, res) => {
   try {
-    // 1. Get BetterAuth session from cookie/headers
     const session = await auth.api.getSession({
       headers: fromNodeHeaders(req.headers),
     });
@@ -16,7 +15,6 @@ router.post("/issue", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: No active session" });
     }
 
-    // 2. Generate custom JWT for Express API
     const token = jwt.sign(
       { 
         userId: session.user.id, 

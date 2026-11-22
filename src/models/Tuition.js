@@ -23,7 +23,6 @@ const tuitionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Challenge 1: search + filter indexes
 tuitionSchema.index({ title: "text", subject: "text" });
 tuitionSchema.index({ approvalStatus: 1, isActive: 1 });
 tuitionSchema.index({ subject: 1, classLevel: 1, mode: 1 });

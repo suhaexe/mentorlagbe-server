@@ -1,11 +1,22 @@
 import mongoose from "mongoose";
 
+const cache = (globalThis.__mongooseCache ??= { conn: null, promise: null });
+
 export async function connectDB() {
+  if (cache.conn) return cache.conn;
+
+  cache.promise ??= mongoose.connect(process.env.MONGODB_URI, {
+    maxPoolSize: 5,
+    serverSelectionTimeoutMS: 8000,
+  });
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    cache.conn = await cache.promise;
     console.log("MongoDB connected");
-  } catch (err) {
-    console.error("MongoDB connection error:", err.message);
-    process.exit(1);
+    return cache.conn;
+  } catch (error) {
+    cache.promise = null;
+    console.error("MongoDB connection error:", error.message);
+    throw error;
   }
 }

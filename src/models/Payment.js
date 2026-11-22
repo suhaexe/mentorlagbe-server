@@ -5,7 +5,7 @@ const paymentSchema = new mongoose.Schema(
     userEmail: { type: String, required: true, lowercase: true },
     userName: String,
     userRole: { type: String, enum: ["student", "tutor"], required: true },
-    planName: { type: String, required: true }, // "tutor-pro" | "student-pro"
+    planName: { type: String, required: true }, 
     amount: { type: Number, required: true },
     currency: { type: String, default: "USD" },
     transactionId: { type: String, required: true },

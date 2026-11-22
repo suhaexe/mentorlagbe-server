@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
     bio: String,
     plan: { type: String, enum: ["free", "pro"], default: "free" },
   },
-  { timestamps: true, strict: false } // strict:false lets BetterAuth write extra fields
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("User", userSchema, "users");

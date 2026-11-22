@@ -48,7 +48,7 @@ export const createApplication = async (req, res) => {
       subject,
       monthlyFee,
       tutorEmail,
-      studentName: req.user.name || "Student", // Fallback
+      studentName: req.user.name || "Student", 
       studentEmail: req.user.email,
       studentPhone,
       preferredSchedule,

@@ -3,41 +3,47 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { admin } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 
-const client = new MongoClient(process.env.MONGODB_URI);
+const isProduction = process.env.NODE_ENV === "production";
+
+const clientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const SIGNUP_ROLES = ["student", "tutor"];
+
+const client = new MongoClient(process.env.MONGODB_URI, { maxPoolSize: 5 });
 const db = client.db();
+
+const advanced = isProduction
+  ? {
+      defaultCookieAttributes: {
+        sameSite: process.env.COOKIE_SAMESITE || "lax",
+        secure: true,
+      },
+      ...(process.env.COOKIE_DOMAIN
+        ? {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: process.env.COOKIE_DOMAIN,
+            },
+          }
+        : {}),
+    }
+  : {};
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, { usePlural: true }),
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
-  
-  // Explicitly allow both origins
-  trustedOrigins: ["http://localhost:3000", "http://localhost:5000"],
 
-  // CRITICAL for cross-port OAuth
-  advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-    },
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true, // Must be true for SameSite=None. Browsers allow this on localhost.
-    },
-  },
+  trustedOrigins: [
+    ...clientOrigins,
+    ...(isProduction ? [] : ["http://localhost:3000", "http://localhost:5000"]),
+  ],
 
-  // Explicitly configure the state cookie
-  cookies: {
-    state: {
-      attributes: {
-        sameSite: "none",
-        secure: true,
-        httpOnly: true,
-        path: "/",
-      },
-    },
-  },
+  advanced,
 
-  // Allow linking Google account to existing email/password account
   account: {
     accountLinking: {
       enabled: true,
@@ -58,7 +64,7 @@ export const auth = betterAuth({
     additionalFields: {
       phone: { type: "string", required: false },
       bio: { type: "string", required: false },
-      plan: { type: "string", defaultValue: "free" },
+      plan: { type: "string", defaultValue: "free", input: false },
       role: { type: "string", defaultValue: "student", input: false },
       requestedRole: { type: "string", required: false, input: true },
     },
@@ -68,11 +74,9 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (user) => {
-          if (user.requestedRole) {
-            user.role = user.requestedRole;
-            delete user.requestedRole;
-          }
-          return { data: user };
+          const { requestedRole, ...rest } = user;
+          const role = SIGNUP_ROLES.includes(requestedRole) ? requestedRole : "student";
+          return { data: { ...rest, role } };
         },
       },
     },
