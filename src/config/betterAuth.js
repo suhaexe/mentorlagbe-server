@@ -3,7 +3,7 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { admin } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 
-const isProduction = process.env.NODE_ENV === "production";
+const isHttps = (process.env.BETTER_AUTH_URL || "").startsWith("https://");
 
 const clientOrigins = (process.env.CLIENT_URL || "")
   .split(",")
@@ -15,10 +15,10 @@ const SIGNUP_ROLES = ["student", "tutor"];
 const client = new MongoClient(process.env.MONGODB_URI, { maxPoolSize: 5 });
 const db = client.db();
 
-const advanced = isProduction
+const advanced = isHttps
   ? {
       defaultCookieAttributes: {
-        sameSite: process.env.COOKIE_SAMESITE || "none",
+        sameSite: "none",
         secure: true,
       },
       ...(process.env.COOKIE_DOMAIN
@@ -39,7 +39,7 @@ export const auth = betterAuth({
 
   trustedOrigins: [
     ...clientOrigins,
-    ...(isProduction ? [] : ["http://localhost:3000", "http://localhost:5000"]),
+    ...(isHttps ? [] : ["http://localhost:3000", "http://localhost:5000"]),
   ],
 
   advanced,
