@@ -38,4 +38,18 @@ router.put("/profile", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/stats", verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalTutors = await User.countDocuments({ role: "tutor" });
+    
+    const Tuition = (await import("../models/Tuition.js")).default;
+    const pendingTuitions = await Tuition.countDocuments({ approvalStatus: "pending" });
+
+    res.json({ totalUsers, totalTutors, pendingTuitions });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router;
